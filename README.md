@@ -77,5 +77,4 @@ npm run typecheck && npm run lint
 ## Folder notes
 
 - `content/seed/` holds the starting content. It feeds `cms:seed`, and is the local fallback.
-- `assets-source/` holds originals and the compressed trailers. It is git-ignored and never deployed.
-- `legacy-backup/` is the previous build, kept in case anything is needed from it. Delete it when you are happy.
+- `assets-source/` holds the cover original, the rendered full wrap, and the compressed trailers that `cms:seed` uploads. It is git-ignored and never deployed.

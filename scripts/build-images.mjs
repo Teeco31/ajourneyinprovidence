@@ -17,17 +17,9 @@ const w = meta.width;
 const h = meta.height;
 console.log(`cover ${w}x${h}`);
 
-for (const width of [480, 800]) {
-  await sharp(src).resize({ width }).webp({ quality: 80 }).toFile(`${out}/cover-${width}.webp`);
-}
+await sharp(src).resize({ width: 800 }).webp({ quality: 80 }).toFile(`${out}/cover-800.webp`);
 
-// Portrait crops of the cover (head and shoulders), interim until official portraits arrive.
-await sharp(src)
-  .extract({ left: Math.round(w * 0.22), top: Math.round(h * 0.12), width: Math.round(w * 0.56), height: Math.round(w * 0.56) })
-  .resize({ width: 640, height: 640 })
-  .webp({ quality: 80 })
-  .toFile(`${out}/portrait-640.webp`);
-
+// Tall portrait crop of the cover (head and shoulders), interim until official portraits arrive.
 const tallW = Math.round(w * 0.76);
 await sharp(src)
   .extract({ left: Math.round(w * 0.12), top: Math.round(h * 0.08), width: tallW, height: Math.round((tallW * 4) / 3) })

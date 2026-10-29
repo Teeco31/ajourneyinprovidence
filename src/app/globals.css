@@ -188,3 +188,14 @@
   width: 100%;
   height: auto;
 }
+
+/* Phone menu links: 36px on short screens, 48px when there is height to spare. */
+@utility menu-link-size {
+  font-size: 2.25rem;
+  line-height: 1.15;
+
+  @media (min-height: 760px) {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+}

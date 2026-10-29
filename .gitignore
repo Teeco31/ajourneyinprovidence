@@ -2,6 +2,5 @@ node_modules
 .next
 out
 assets-source
-legacy-backup
 .env*.local
 *.tsbuildinfo

@@ -36,9 +36,7 @@ export function SiteFooter() {
           <div>
             <p className="text-sm font-semibold">More</p>
             <ul className="mt-3 text-sm">
-              {content.photos.length > 0 ? (
-                <li><Link className="inline-flex min-h-11 items-center underline" href="/gallery/">Photo gallery</Link></li>
-              ) : null}
+              <li><Link className="inline-flex min-h-11 items-center underline" href="/gallery/">Photo gallery</Link></li>
               <li><a className="inline-flex min-h-11 items-center underline" href="/privacy/">Privacy notice</a></li>
               <li><a className="inline-flex min-h-11 items-center underline" href="/qr/">Printable QR code</a></li>
             </ul>

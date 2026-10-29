@@ -17,7 +17,7 @@ const navLinks = [
   ...(content.trailers.some((v) => v.youtubeId || v.src) ? [{ href: "/#watch", label: "Watch" }] : []),
   { href: "/#launch", label: "Launch events" },
   { href: "/#buy", label: "Buy" },
-  ...(content.photos.length > 0 ? [{ href: "/gallery/", label: "Gallery" }] : []),
+  { href: "/gallery/", label: "Gallery" },
   { href: "/#contact", label: "Contact" },
 ];
 
