@@ -1,0 +1,22 @@
+[
+  {
+    "id": "nape-2026",
+    "title": "Official book launch at the 44th Annual NAPE Conference",
+    "kind": "Official launch",
+    "start": "2026-11-08T09:00:00+01:00",
+    "end": "2026-11-12T18:00:00+01:00",
+    "launchConfirmed": false,
+    "dateLabel": "8 to 12 November 2026",
+    "timeLabel": "Launch day and time to be confirmed",
+    "venue": "Eko Hotel & Suites",
+    "address": "Victoria Island, Lagos, Nigeria",
+    "mapQuery": "Eko Hotel & Suites, Victoria Island, Lagos",
+    "details": "The book will be launched during the 44th Annual NAPE Conference & Exhibition. Conference theme: Unlocking More Barrels: Driving Reserves Growth through Exploration, Local Capabilities, & Adaptive Technology.",
+    "dressCode": "",
+    "livestreamUrl": "",
+    "infoUrl": "https://nape.org.ng/conferences",
+    "statusOverride": "",
+    "rsvp": true,
+    "countdownLabel": "44th NAPE Conference opens in"
+  }
+]

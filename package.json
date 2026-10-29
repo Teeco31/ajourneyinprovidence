@@ -1,0 +1,37 @@
+{
+  "name": "a-journey-in-providence",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "images": "node scripts/build-images.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "cms:model": "node --env-file=.env.local scripts/contentful/model.mjs",
+    "cms:seed": "node --env-file=.env.local scripts/contentful/seed.mjs",
+    "cms:setup": "npm run cms:model && npm run cms:seed"
+  },
+  "dependencies": {
+    "contentful": "^11.12.10",
+    "next": "16.2.6",
+    "qrcode": "1.5.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.1.17",
+    "@types/node": "22.19.15",
+    "@types/qrcode": "1.5.5",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "contentful-management": "^11.76.0",
+    "contentful-migration": "^4.32.0",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "postcss": "8.5.8",
+    "sharp": "0.34.5",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.9.3"
+  }
+}
