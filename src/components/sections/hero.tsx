@@ -1,4 +1,5 @@
 import { content, primaryEvent } from "@/lib/content";
+import { editionSentence } from "@/lib/editions";
 import { BookCover } from "../book-cover";
 import { Countdown } from "../countdown";
 import { Wave } from "../wave";
@@ -17,6 +18,9 @@ export function Hero() {
           </h1>
           <p className="mt-4 text-xl font-semibold text-ink-700">{book.subtitle}</p>
           <p className="mt-6 max-w-prose text-base text-ink-700">{book.blurb}</p>
+          {content.editions.length > 0 ? (
+            <p className="mt-4 text-base font-semibold text-ink-900">{editionSentence(content.editions)}</p>
+          ) : null}
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a href="#buy" className="btn btn-primary">Buy the book</a>
@@ -31,7 +35,13 @@ export function Hero() {
         </div>
 
         <div className="order-1 md:order-2">
-          <BookCover priority />
+          <BookCover
+            priority
+            editions={content.editions}
+            title={book.title}
+            subtitle={book.subtitle}
+            authorShortName={author.shortName}
+          />
         </div>
       </div>
       <Wave className="text-white" />

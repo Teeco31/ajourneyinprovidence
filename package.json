@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "cms:model": "node --env-file=.env.local scripts/contentful/model.mjs",
     "cms:seed": "node --env-file=.env.local scripts/contentful/seed.mjs",
-    "cms:setup": "npm run cms:model && npm run cms:seed"
+    "cms:setup": "npm run cms:model && npm run cms:update && npm run cms:seed",
+    "cms:update": "node --env-file=.env.local scripts/contentful/model.mjs 002-editions.cjs && node --env-file=.env.local scripts/contentful/model.mjs 003-remove-formats.cjs && node --env-file=.env.local scripts/contentful/model.mjs 004-edition-images.cjs && node --env-file=.env.local scripts/contentful/model.mjs 005-featured-photos.cjs"
   },
   "dependencies": {
     "contentful": "^11.12.10",

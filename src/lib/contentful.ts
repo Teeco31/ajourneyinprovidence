@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createClient } from "contentful";
-import type { EventItem, Endorsement, PressItem, Photo, SiteContent, Store, Trailer } from "./types";
+import type { EventItem, Edition, Endorsement, PressItem, Photo, Picture, SiteContent, Store, Trailer } from "./types";
 
 export type Content = {
   site: SiteContent;
   events: EventItem[];
+  editions: Edition[];
   stores: Store[];
   endorsements: Endorsement[];
   press: PressItem[];
@@ -28,6 +29,14 @@ function assetUrl(asset: unknown): string {
   return file.url.startsWith("//") ? `https:${file.url}` : file.url;
 }
 
+/** A Contentful image asset with its real pixel size, or null when the field is empty. */
+function assetPicture(asset: unknown): Picture | null {
+  const file = (asset as Linked)?.fields?.file as { url?: string; details?: { image?: { width?: number; height?: number } } } | undefined;
+  const src = assetUrl(asset);
+  const size = file?.details?.image;
+  return src && size?.width && size?.height ? { src, width: size.width, height: size.height } : null;
+}
+
 const shortDate = (iso: string) =>
   iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Africa/Lagos" }) : "";
 
@@ -45,10 +54,11 @@ async function fromContentful(): Promise<Content> {
     return (res.items as unknown as { sys: { id: string }; fields: Fields }[]);
   };
 
-  const [settings, highlights, events, stores, endorsements, press, photos, videos, kit] = await Promise.all([
+  const [settings, highlights, events, editions, stores, endorsements, press, photos, videos, kit] = await Promise.all([
     get("siteSettings"),
     get("authorHighlight", ["fields.order"]),
     get("event", ["fields.start"]),
+    get("edition", ["fields.order"]),
     get("store", ["fields.order"]),
     get("endorsement", ["fields.order"]),
     get("pressItem", ["-fields.publishedOn"]),
@@ -71,6 +81,7 @@ async function fromContentful(): Promise<Content> {
         eventId: ev ? str(ev, "slug") : "",
         eventTitle: ev ? str(ev, "title") : "",
         takenOn: str(f, "takenOn"),
+        featured: bool(f, "featured"),
       };
     })
     .filter((p) => p.src);
@@ -87,8 +98,6 @@ async function fromContentful(): Promise<Content> {
         closing: str(s, "closing"),
         themes: list(s, "themes"),
         publisher: str(s, "publisher"),
-        isbn: str(s, "isbn"),
-        formats: str(s, "formats"),
         pages: str(s, "pages"),
         samplePdf: assetUrl(s.samplePdf),
       },
@@ -126,6 +135,17 @@ async function fromContentful(): Promise<Content> {
         gallery: withPhotos.has(id) ? `/gallery/#event-${id}` : "",
       };
     }),
+    editions: editions
+      .map(({ sys, fields: f }) => ({
+        id: sys.id,
+        name: str(f, "name"),
+        isbn: str(f, "isbn"),
+        note: str(f, "note"),
+        cover: assetPicture(f.cover),
+        spine: assetPicture(f.spine),
+        fullJacket: assetPicture(f.fullJacket),
+      }))
+      .filter((e) => e.name),
     stores: stores.map(({ sys, fields: f }) => ({
       id: sys.id,
       name: str(f, "name"),
@@ -155,6 +175,7 @@ function fromSeed(): Content {
   return {
     site: { ...site, pressKit: [] },
     events: read<EventItem[]>("events.json").map((e) => ({ ...e, gallery: "" })),
+    editions: read<Edition[]>("editions.json"),
     stores: [],
     endorsements: [],
     press: [],
@@ -163,9 +184,44 @@ function fromSeed(): Content {
   };
 }
 
+// A build starts several workers and each one loads the content. They share one fetch through a short-lived file,
+// and a failed fetch is retried, so a flaky connection does not fail the whole build.
+const CACHE_FILE = path.join(
+  process.cwd(),
+  `node_modules/.cache/ajip-content-${process.env.CONTENTFUL_SPACE_ID}-${process.env.CONTENTFUL_ENVIRONMENT || "master"}.json`,
+);
+const CACHE_SECONDS = 30;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(): Promise<Content> {
+  try {
+    if (Date.now() - fs.statSync(CACHE_FILE).mtimeMs < CACHE_SECONDS * 1000) {
+      return JSON.parse(fs.readFileSync(CACHE_FILE, "utf8")) as Content;
+    }
+  } catch {
+    // No usable cache. Fetch.
+  }
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    try {
+      const data = await fromContentful();
+      fs.mkdirSync(path.dirname(CACHE_FILE), { recursive: true });
+      const temp = `${CACHE_FILE}.${process.pid}.tmp`;
+      fs.writeFileSync(temp, JSON.stringify(data));
+      fs.renameSync(temp, CACHE_FILE);
+      return data;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 4) await sleep(2000 * attempt);
+    }
+  }
+  throw lastError;
+}
+
 export async function loadContent(): Promise<Content> {
   const configured = Boolean(process.env.CONTENTFUL_SPACE_ID && process.env.CONTENTFUL_DELIVERY_TOKEN);
-  if (configured) return fromContentful();
+  if (configured) return fetchWithRetry();
   if (process.env.CI) {
     throw new Error("CONTENTFUL_SPACE_ID and CONTENTFUL_DELIVERY_TOKEN must be set for a production build.");
   }

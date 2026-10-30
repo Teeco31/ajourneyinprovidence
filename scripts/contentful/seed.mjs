@@ -1,5 +1,6 @@
 // Loads the known content (book, author, NAPE event, trailers) into Contentful. Run after the model: npm run cms:seed
-// Safe to run again: entries and assets are matched by id or title and updated, not duplicated.
+// Safe to run again: it only creates what is missing and never overwrites an entry that already exists,
+// so nothing the client has edited in Contentful is lost.
 // Not seeded on purpose: stores, endorsements, press, gallery photos and media kit. Those come from the client.
 import fs from "node:fs";
 import path from "node:path";
@@ -29,19 +30,34 @@ const wrap = (fields) =>
       .map(([k, v]) => [k, { [locale]: v }]),
   );
 
-async function upsert(type, id, fields) {
-  let entry;
+/**
+ * Creates the entry if it is missing. If it exists it is left alone, unless `fillMissing` is set:
+ * then only fields that are still empty are filled in, and anything already there is never overwritten.
+ */
+async function upsert(type, id, fields, { fillMissing = false } = {}) {
+  let entry = null;
   try {
     entry = await env.getEntry(id);
-    entry.fields = wrap(fields);
-    entry = await entry.update();
-    console.log(`updated ${type} ${id}`);
   } catch (e) {
     if (!isNotFound(e)) throw e;
-    entry = await env.createEntryWithId(type, id, { fields: wrap(fields) });
-    console.log(`created ${type} ${id}`);
   }
+
+  if (!entry) {
+    entry = await env.createEntryWithId(type, id, { fields: wrap(fields) });
+    await entry.publish();
+    console.log(`created ${type} ${id}`);
+    return entry;
+  }
+
+  const missing = fillMissing ? Object.entries(wrap(fields)).filter(([key]) => entry.fields[key] === undefined) : [];
+  if (missing.length === 0) {
+    console.log(`kept existing ${type} ${id}`);
+    return entry;
+  }
+  for (const [key, value] of missing) entry.fields[key] = value;
+  entry = await entry.update();
   await entry.publish();
+  console.log(`filled ${missing.map(([key]) => key).join(", ")} on ${type} ${id}`);
   return entry;
 }
 
@@ -75,8 +91,6 @@ await upsert("siteSettings", "site-settings", {
   closing: site.book.closing,
   themes: site.book.themes,
   publisher: site.book.publisher,
-  isbn: site.book.isbn,
-  formats: site.book.formats,
   pages: site.book.pages,
   authorName: site.author.name,
   authorShortName: site.author.shortName,
@@ -89,6 +103,30 @@ await upsert("siteSettings", "site-settings", {
 
 for (const [i, h] of site.author.highlights.entries()) {
   await upsert("authorHighlight", `highlight-${i + 1}`, { title: h.title, period: h.period, body: h.body, order: i + 1 });
+}
+
+// ---- Editions (hardback and paperback), each with its own ISBN and pictures.
+// Pictures are cut by `npm run images` into assets-source/editions/. Existing editions only get empty fields filled.
+const editionFiles = {
+  hardback: {
+    cover: ["Hardback front cover", "hardback-cover.jpg", "image/jpeg"],
+    spine: ["Hardback spine", "hardback-spine.webp", "image/webp"],
+    fullJacket: ["Hardback full jacket", "hardback-jacket.webp", "image/webp"],
+  },
+  paperback: {
+    cover: ["Paperback front cover", "paperback-cover.jpg", "image/jpeg"],
+    spine: ["Paperback spine", "paperback-spine.webp", "image/webp"],
+    fullJacket: ["Paperback full jacket", "paperback-jacket.jpg", "image/jpeg"],
+  },
+};
+for (const [i, ed] of readJson("editions.json").entries()) {
+  const images = {};
+  for (const [field, [title, file, contentType]] of Object.entries(editionFiles[ed.id] ?? {})) {
+    const filePath = path.resolve("assets-source/editions", file);
+    if (fs.existsSync(filePath)) images[field] = await uploadAsset(title, filePath, contentType);
+    else console.warn(`skipped ${title}: ${filePath} not found. Run npm run images first.`);
+  }
+  await upsert("edition", `edition-${ed.id}`, { name: ed.name, isbn: ed.isbn, note: ed.note, order: i + 1, ...images }, { fillMissing: true });
 }
 
 // ---- Events

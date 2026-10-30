@@ -1,0 +1,20 @@
+[
+  {
+    "id": "hardback",
+    "name": "Hardback",
+    "isbn": "978-978-63469-1-5",
+    "note": "",
+    "cover": { "src": "/images/cover-800.webp", "width": 800, "height": 1071 },
+    "spine": { "src": "/images/spine.webp", "width": 143, "height": 1400 },
+    "fullJacket": { "src": "/images/wrap-1800.webp", "width": 1800, "height": 1175 }
+  },
+  {
+    "id": "paperback",
+    "name": "Paperback",
+    "isbn": "978-978-63469-0-8",
+    "note": "",
+    "cover": { "src": "/images/cover-paperback-800.webp", "width": 800, "height": 1192 },
+    "spine": { "src": "/images/spine-paperback.webp", "width": 119, "height": 1400 },
+    "fullJacket": { "src": "/images/wrap-paperback-1800.webp", "width": 1800, "height": 1262 }
+  }
+]

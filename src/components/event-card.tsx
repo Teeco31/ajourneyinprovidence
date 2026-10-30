@@ -84,7 +84,10 @@ export function EventCard({ event, status, contactEmail }: { event: EventItem; s
         <div className="mt-8 rounded-card bg-white p-6">
           <h4 className="text-2xl font-display text-ink-900">RSVP</h4>
           <div className="mt-4 max-w-md">
-            <RsvpForm eventTitle={event.title} contactEmail={contactEmail} />
+            <RsvpForm
+              event={{ id: event.id, title: event.title, dateLabel: event.dateLabel, hasLivestream: Boolean(event.livestreamUrl) }}
+              contactEmail={contactEmail}
+            />
           </div>
         </div>
       ) : null}

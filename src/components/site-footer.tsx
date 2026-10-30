@@ -4,7 +4,7 @@ import { ShareButtons } from "./share-buttons";
 import { Wave } from "./wave";
 
 export function SiteFooter() {
-  const { book, social } = content.site;
+  const { book, social, contact } = content.site;
   const socials = Object.entries(social).filter(([, url]) => url);
 
   return (
@@ -16,7 +16,24 @@ export function SiteFooter() {
             <p className="font-display text-3xl">{book.title}</p>
             <p className="mt-2 text-sm text-sky-200">{book.subtitle}</p>
             <p className="mt-4 text-sm text-sky-200">Published by {book.publisher}</p>
-            <p className="text-sm text-sky-200 tabular">ISBN {book.isbn}</p>
+            {contact.email || contact.phone ? (
+              <ul className="mt-4 text-sm">
+                {contact.email ? (
+                  <li>
+                    <a className="inline-flex min-h-11 items-center break-all underline" href={`mailto:${contact.email}`}>
+                      {contact.email}
+                    </a>
+                  </li>
+                ) : null}
+                {contact.phone ? (
+                  <li>
+                    <a className="inline-flex min-h-11 items-center underline tabular" href={`tel:${contact.phone.replace(/\s/g, "")}`}>
+                      {contact.phone}
+                    </a>
+                  </li>
+                ) : null}
+              </ul>
+            ) : null}
           </div>
 
           <div>

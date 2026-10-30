@@ -1,4 +1,6 @@
-// Creates the content types in your Contentful space. Run once: npm run cms:model
+// Runs a Contentful migration file from scripts/contentful/. Default is the first model.
+//   npm run cms:model    creates the content types on an empty space (model.cjs)
+//   npm run cms:update   applies migration 002 (editions) to an existing space
 import path from "node:path";
 import * as migrationPkg from "contentful-migration";
 
@@ -11,10 +13,10 @@ if (!CONTENTFUL_SPACE_ID || !CONTENTFUL_MANAGEMENT_TOKEN) {
 }
 
 await runMigration({
-  filePath: path.resolve("scripts/contentful/model.cjs"),
+  filePath: path.resolve("scripts/contentful", process.argv[2] ?? "model.cjs"),
   spaceId: CONTENTFUL_SPACE_ID,
   accessToken: CONTENTFUL_MANAGEMENT_TOKEN,
   environmentId: CONTENTFUL_ENVIRONMENT || "master",
   yes: true,
 });
-console.log("Content model created.");
+console.log("Migration applied.");

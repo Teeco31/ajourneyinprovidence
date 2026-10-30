@@ -11,8 +11,6 @@ export type SiteContent = {
     closing: string;
     themes: string[];
     publisher: string;
-    isbn: string;
-    formats: string;
     pages: string;
     samplePdf: string;
   };
@@ -45,10 +43,23 @@ export type EventItem = {
   gallery: string;
 };
 
+/** A picture with its real size, so the page can reserve space and size the 3D spine correctly. */
+export type Picture = { src: string; width: number; height: number };
+
+/** Hardback or paperback. Each has its own ISBN and its own pictures. */
+export type Edition = {
+  id: string;
+  name: string;
+  isbn: string;
+  note: string;
+  cover: Picture | null;
+  spine: Picture | null;
+  fullJacket: Picture | null;
+};
 export type Store = { id: string; name: string; note: string; url: string; format: string; priceNgn: string; priceUsd: string };
 export type Endorsement = { quote: string; name: string; title: string };
 export type PressItem = { outlet: string; headline: string; url: string; date: string };
-export type Photo = { id: string; src: string; alt: string; caption: string; eventId: string; eventTitle: string; takenOn: string };
+export type Photo = { id: string; src: string; alt: string; caption: string; eventId: string; eventTitle: string; takenOn: string; featured: boolean };
 export type Trailer = { title: string; youtubeId: string; src: string; poster: string; caption: string };
 
 export type EventStatus = "Upcoming" | "Live" | "Past";

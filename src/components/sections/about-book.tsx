@@ -4,10 +4,10 @@ import { SectionHeading } from "../section-heading";
 
 export function AboutBook() {
   const { book } = content.site;
+  const jackets = content.editions.filter((e) => e.fullJacket);
   const facts = [
     { term: "Publisher", value: book.publisher },
-    { term: "ISBN", value: book.isbn },
-    book.formats ? { term: "Formats", value: book.formats } : null,
+    content.editions.length > 0 ? { term: "Editions", value: content.editions.map((e) => e.name).join(" and ") } : null,
     book.pages ? { term: "Pages", value: book.pages } : null,
   ].filter((f): f is { term: string; value: string } => f !== null);
 
@@ -65,18 +65,27 @@ export function AboutBook() {
         </div>
       </div>
 
-      <div className="container-page mt-16">
-        <Image
-          src="/images/wrap-1800.webp"
-          alt="The full printed jacket laid flat: back cover on the left, the spine in the middle and the front cover on the right."
-          width={1800}
-          height={1175}
-          sizes="(min-width: 1152px) 72rem, 100vw"
-          loading="lazy"
-          className="h-auto w-full rounded-card"
-        />
-        <p className="mt-3 text-sm text-ink-500">The full jacket, back to front.</p>
-      </div>
+      {jackets.length > 0 ? (
+        <div className="container-page mt-16">
+          <h3 className="text-2xl text-ink-900">{jackets.length > 1 ? "The jackets, back to front" : "The jacket, back to front"}</h3>
+          <ul className={`mt-6 grid gap-8 ${jackets.length > 1 ? "md:grid-cols-2" : ""}`}>
+            {jackets.map((e) => (
+              <li key={e.id}>
+                <Image
+                  src={e.fullJacket!.src}
+                  alt={`The ${e.name.toLowerCase()} jacket laid flat: back cover on the left, the spine in the middle and the front cover on the right.`}
+                  width={e.fullJacket!.width}
+                  height={e.fullJacket!.height}
+                  sizes={jackets.length > 1 ? "(min-width: 1152px) 36rem, (min-width: 768px) 50vw, 100vw" : "(min-width: 1152px) 72rem, 100vw"}
+                  loading="lazy"
+                  className="h-auto w-full rounded-card"
+                />
+                <p className="mt-3 text-sm text-ink-500">{e.name}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }
